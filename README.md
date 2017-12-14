@@ -36,6 +36,8 @@ the file is automatically copied into the venv.
 let's try modifying it:
 ```
 $ echo changes for conf1 > test
+
+
 $ ./venv -select conf2
 pushing...
 test -> .venv/a8d5c723-655e-4eb6-98be-453fe8c85a7f/a747bed0-298b-4ffe-8bfd-158ab7bd8cda
@@ -43,11 +45,15 @@ pulling...
 .venv/a295705e-2874-45c2-a66a-7f7de274e6d7/056397d7-221e-4b27-8cda-a7798122ea26 -> test
 $ cat test
 conf
+
+
 $ ./venv -select conf1
 pushing...
 test -> .venv/a295705e-2874-45c2-a66a-7f7de274e6d7/056397d7-221e-4b27-8cda-a7798122ea26
 pulling...
 .venv/a8d5c723-655e-4eb6-98be-453fe8c85a7f/a747bed0-298b-4ffe-8bfd-158ab7bd8cda -> test
+
+
 $ cat test
 changes for conf1
 
