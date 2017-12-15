@@ -41,6 +41,7 @@ int main(int argc, const char * argv[]) try {
         {arg::create,     x::option("creates a new venv")},
         {arg::add,        x::option("adds a file to a venv")},
         {arg::push,       x::option("push all changes to the active venv")},
+        {arg::to,         x::option("specifies a destination")},
         {arg::from,       x::option("used with -pull switch to provide a source venv")},
         {arg::pull,       x::option("pulls new copies and replaces working copy")},
         {arg::push,       x::option("pushes current changes to a venv")},
@@ -48,6 +49,11 @@ int main(int argc, const char * argv[]) try {
         {arg::cmd,        x::option("prints the given command")},
     });
     
+    
+    if(arguments[arg::cmd]){
+        std::cout << argv[0] << std::endl;
+    }
+        
     if(arguments[arg::help]){
         cout << "venv 1.0 by Daher Alfawares" << std::endl;
         cout << arguments.print() << std::endl;
@@ -67,14 +73,16 @@ int main(int argc, const char * argv[]) try {
     auto repo = v::repository();
     
     if(arguments[arg::create]){
-        auto venv = v::venv(arguments[arg::create].value());
-        
-        if(!repo.exists(venv.name)){
-            repo.create(venv);
-            cout << "creating venv [" << venv.name << "]" << endl;
-            ::system(x::shell::mkdir(v::root_folder + "/" + venv.id).c_str());
-        } else {
-            cerr << "[" << venv.name << "]" << " venv already exists." << std::endl;
+        auto venv_names = arguments[arg::create].values();
+        for(auto name:venv_names){
+            auto venv = v::venv(name);
+            if(!repo.exists(venv.name)){
+                repo.create(venv);
+                cout << "creating venv [" << venv.name << "]" << endl;
+                ::system(x::shell::mkdir(v::root_folder + "/" + venv.id).c_str());
+            } else {
+                cerr << "[" << venv.name << "]" << " venv already exists." << std::endl;
+            }
         }
     }
 
@@ -149,11 +157,16 @@ int main(int argc, const char * argv[]) try {
         }
         return 0;
     }
-        
-        if(arguments[arg::cmd]){
-            std::cout << argv[0] << std::endl;
+
+    if(argc == 1){
+        auto venvs = repo.all_venvs();
+        if(venvs.empty()){
+            std::cout << "venv is empty" << std::endl;
+        } else {
+            cout << repo << std::endl;
         }
-    
+    }
+        
     return 0;
 }
 catch(...) {}

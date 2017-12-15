@@ -61,7 +61,7 @@ std::string options::print(){
     for(auto iter:map){
         out(iter.first)(iter.second.description())++;
     }
-    stream << "Usage: xctest -[switch] value1 value2 ..." << std::endl;
+    stream << "Usage: -[switch] value1 value2 ..." << std::endl;
     stream << out;
     return stream.str();
 }
