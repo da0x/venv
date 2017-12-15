@@ -18,11 +18,13 @@ namespace arg {
     std::string deinit      = "-deinit";
     std::string list        = "-ls";
     std::string create      = "-create";
-    std::string select      = "-select";
     std::string add         = "-add";
     std::string to          = "-to";
+    std::string from        = "-from";
     std::string push        = "-push";
     std::string pull        = "-pull";
+    std::string diff        = "-diff";
+    std::string cmd         = "-cmd";
 }
 
 int main(int argc, const char * argv[]) try {
@@ -32,16 +34,18 @@ int main(int argc, const char * argv[]) try {
     
     auto arguments = x::options(argc,argv);
     arguments.map_to({
-        {arg::help,       x::option("this help message.")},
-        {arg::init,       x::option("initializes the current directory for venv use.")},
-        {arg::list,       x::option("lists all files in a venv.")},
-        {arg::deinit,     x::option("removes all items and venvs.")},
-        {arg::select,     x::option("select the active venv. auto push/pull")},
-        {arg::create,     x::option("creates a new venv.")},
-        {arg::add,        x::option("adds a file to a venv \"-add file -to venv\".")},
-        {arg::to,         x::option("used with -add switch to provide destination venv.")},
-        {arg::pull,       x::option("pull new copies from the active venv.")},
-        {arg::push,       x::option("push all changes to the active venv.")},
+        {arg::help,       x::option("this help message")},
+        {arg::init,       x::option("initializes the current directory for venv use")},
+        {arg::list,       x::option("lists all files in a venv")},
+        {arg::deinit,     x::option("removes all venv-related files")},
+        {arg::create,     x::option("creates a new venv")},
+        {arg::add,        x::option("adds a file to a venv")},
+        {arg::push,       x::option("push all changes to the active venv")},
+        {arg::from,       x::option("used with -pull switch to provide a source venv")},
+        {arg::pull,       x::option("pulls new copies and replaces working copy")},
+        {arg::push,       x::option("pushes current changes to a venv")},
+        {arg::diff,       x::option("shows diffs of a specific venv")},
+        {arg::cmd,        x::option("prints the given command")},
     });
     
     if(arguments[arg::help]){
@@ -70,75 +74,85 @@ int main(int argc, const char * argv[]) try {
             cout << "creating venv [" << venv.name << "]" << endl;
             ::system(x::shell::mkdir(v::root_folder + "/" + venv.id).c_str());
         } else {
-            cerr << "[" << venv.name << "]" << " venv exists." << std::endl;
+            cerr << "[" << venv.name << "]" << " venv already exists." << std::endl;
         }
     }
 
     if(arguments[arg::add]){
         if(!arguments[arg::to]){
-            cerr << "missing -to <venv> in command line" << std::endl;
+            cerr << "missing " << arg::to << " <venv> in command line" << std::endl;
             return -1;
         }
+        
         auto file_names = arguments[arg::add].values();
-        auto venv_name = arguments[arg::to].value();
-
-        v::venv& venv = repo[venv_name];
-        for(auto file:file_names){
-            auto item = v::item(file);
-            venv.add(item);
-            venv.push(item);
+        auto venv_names = arguments[arg::to].values();
+        repo.assert_available(venv_names);
+        for(auto name:venv_names){
+            v::venv& venv = repo[name];
+            for(auto file:file_names){
+                auto item = v::item(file);
+                venv.add(item);
+                venv.push(item);
+            }
         }
-    }
-    
-    if(arguments[arg::select]){
-        if(arguments[arg::select].values().size()!=1){
-            cerr << "usage: -select <venv>" << std::endl;
-            return -1;
-        }
-        
-        auto venv_name = arguments[arg::select].value();
-        repo.assert_available(venv_name);
-        
-        if(!repo.active().empty()){
-            auto venv = repo[repo.active()];
-            venv.push();
-        }
-        repo.select(venv_name);
-        auto venv = repo[repo.active()];
-        venv.pull();
     }
     
     if(arguments[arg::list]){
-        auto venv = repo[repo.active()];
-        if(arguments[arg::list].value().size() > 0){
-            auto venv_name = arguments[arg::list].value();
-            venv = repo[venv_name];
+        auto venv_names = arguments[arg::add].values();
+        if(venv_names.empty()){
+            cerr << "usage: venv " << arg::list << " venv_name" << std::endl;
+            return -1;
         }
-        std::cout << venv << std::endl;
+        repo.assert_available(venv_names);
+        for(auto name:venv_names){
+            auto venv = repo[name];
+            std::cout << venv << std::endl;
+        }
     }
     
     if(arguments[arg::pull]){
-        auto venv = repo[repo.active()];
-        venv.pull();
+        auto venv_names = arguments[arg::pull].values();
+        if(venv_names.empty()){
+            cerr << "usage: venv " << arg::pull << " venv_name" << std::endl;
+            return -1;
+        }
+        repo.assert_available(venv_names);
+        for(auto name:venv_names){
+            repo[name].pull();
+        }
     }
     
     if(arguments[arg::push]){
-        auto venv = repo[repo.active()];
-        venv.push();
+        auto venv_names = arguments[arg::push].values();
+        if(venv_names.empty()){
+            cerr << "usage: venv " << arg::push << " venv_name" << std::endl;
+            return -1;
+        }
+        repo.assert_available(venv_names);
+        for(auto name:venv_names){
+            repo[name].push();
+        }
     }
     
-    if(argc == 1)
-    {
-        //std::cout << argv[0] << std::endl;
-        std::cout << repo << std::endl;
-        if(!repo.active().empty()){
-            auto venv = repo[repo.active()];
+    if(arguments[arg::diff]){
+        auto venv_names = arguments[arg::diff].values();
+        if(venv_names.empty()){
+            cerr << "usage: venv " << arg::diff << " venv_name" << std::endl;
+            return -1;
+        }
+        repo.assert_available(venv_names);
+        for(auto name:venv_names){
+            auto venv = repo[name];
             for(auto item:venv.items){
                 venv.diff(item);
             }
         }
         return 0;
     }
+        
+        if(arguments[arg::cmd]){
+            std::cout << argv[0] << std::endl;
+        }
     
     return 0;
 }

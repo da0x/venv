@@ -30,18 +30,15 @@ namespace v {
         typedef std::string string;
         typedef std::map<string,v::venv> map;
         map venvs;
-        string selected_venv;
     public:
         void create(const v::venv& venv){
             venvs[venv.name] = venv;
-            selected_venv = venv.name;
         }
         repository(){
             std::ifstream ifs(v::root_folder+"/venv");
             if(ifs.is_open()){
                 boost::archive::text_iarchive ia(ifs);
                 ia & venvs;
-                ia & selected_venv;
             }
         }
         ~repository(){
@@ -49,12 +46,10 @@ namespace v {
             if(ofs.is_open()){
                 boost::archive::text_oarchive oa(ofs);
                 oa & venvs;
-                oa & selected_venv;
             }
         }
         void select(const std::string& name){
             this->assert_available(name);
-            this->selected_venv = name;
         }
         venv & operator [](const string& name){
             this->assert_available(name);
@@ -68,16 +63,14 @@ namespace v {
         }
         void assert_available(const string& name) const {
             if(!this->exists(name)){
-                std::cerr << "can't find venv \"" << name << "\"" << std::endl;
+                std::cerr << "can't find venv [" << name << "]" << std::endl;
                 throw -1;
             }
         }
-        const string& active() const {
-            if(this->selected_venv.empty()){
-                std::cerr << "select a valid venv." << std::endl;
-                throw -1;
+        void assert_available(const std::vector<string>& names) const {
+            for(auto name:names){
+                this->assert_available(name);
             }
-            return selected_venv;
         }
         const map& all_venvs() const {
             return this->venvs;
@@ -85,20 +78,19 @@ namespace v {
     };
     
     inline
-    std::ostream& operator <<(std::ostream& stream, repository& v){
+    std::ostream& operator << (std::ostream& stream, repository& v){
         auto venvs = v.all_venvs();
         if(venvs.empty()){
             stream << "repository is empty.";
             return stream;
         }
-        x::table out("venv list:");
-        out("id")("files")("name")("selected")++;
+        x::table out("list");
+        out("id")("name")("file")++;
         for(auto venv:venvs){
-            auto s = venv.second;
-            std::stringstream size;
-            size << s.items.size();
-            
-            out(s.id)(size.str())(s.name)(s.name==v.active()?"*":"")++;
+            auto v = venv.second;
+            for(auto i:v.items){
+                out(v.id)("["+v.name+"]")(i.filename)++;
+            }
         }
         stream << out;
         return stream;

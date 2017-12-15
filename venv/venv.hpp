@@ -60,7 +60,7 @@ namespace v {
             ::system(command.c_str());
         }
         void pull(){
-            std::cout << "pulling..." << std::endl;
+            std::cout << "pulling [" << name << "]" << std::endl;
             for(auto item:this->items){
                 this->pull(item);
             }
@@ -72,7 +72,7 @@ namespace v {
             ::system(command.c_str());
         }
         void push(){
-            std::cout << "pushing..." << std::endl;
+            std::cout << "pushing [" << name << "]" << std::endl;
             for(auto item:this->items){
                 push(item);
             }
@@ -87,7 +87,7 @@ namespace v {
     
     inline
     std::ostream& operator << (std::ostream& stream,const venv& venv){
-        x::table out("files in "+venv.name);
+        x::table out("files in ["+venv.name+"]");
         out("id")("file")++;
         for(auto item:venv.items){
             out(item.id)(item.filename)++;
