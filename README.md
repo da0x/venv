@@ -1,6 +1,6 @@
 # venv
 
-venv is a command line tool that helps you create different local file repositories where you can store files and switch working copies between them easily
+venv is file stashing command line tool. it's designed to be a very simple file stashing mechanism that does not impose any rules. it helps you create different local file repositories (each repo is called a venv). you can store files and switch working copies between them easily.
 
 venv is similar to "git stash". however it does not diff internal file contents. instead it swaps out the entire file. this prevents horrific merge conflicts in certain xml (plist) files. and it can all be added to your source control with no issues.
 
