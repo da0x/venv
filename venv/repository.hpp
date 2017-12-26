@@ -30,15 +30,18 @@ namespace v {
         typedef std::string string;
         typedef std::map<string,v::venv> map;
         map venvs;
+        string current_venv;
     public:
         void create(const v::venv& venv){
             venvs[venv.name] = venv;
+            current_venv = venv.name;
         }
         repository(){
             std::ifstream ifs(v::root_folder+"/venv");
             if(ifs.is_open()){
                 boost::archive::text_iarchive ia(ifs);
                 ia & venvs;
+                ia & current_venv;
             }
         }
         ~repository(){
@@ -46,6 +49,7 @@ namespace v {
             if(ofs.is_open()){
                 boost::archive::text_oarchive oa(ofs);
                 oa & venvs;
+                oa & current_venv;
             }
         }
         void select(const std::string& name){
@@ -75,21 +79,34 @@ namespace v {
         const map& all_venvs() const {
             return this->venvs;
         }
+        venv& current(){
+            this->assert_available(this->current_venv);
+            return this->venvs[this->current_venv];
+        }
+        venv& current(string name){
+            this->assert_available(name);
+            this->current_venv = name;
+            return current();
+        }
     };
     
     inline
-    std::ostream& operator << (std::ostream& stream, repository& v){
-        auto venvs = v.all_venvs();
+    std::ostream& operator << (std::ostream& stream, repository& repo){
+        auto venvs = repo.all_venvs();
         if(venvs.empty()){
             stream << "repository is empty.";
             return stream;
         }
         x::table out("list");
-        out("id")("name")("file")++;
+        out("id")("name")("internal file")++;
         for(auto venv:venvs){
             auto v = venv.second;
             for(auto i:v.items){
-                out(v.id)("["+v.name+"]")(i.filename)++;
+                auto name = "☐ "+v.name;
+                if(v.name == repo.current().name){
+                    name = "☒ "+v.name;
+                }
+                out(name)(i.filename)(v.id)++;
             }
         }
         stream << out;
