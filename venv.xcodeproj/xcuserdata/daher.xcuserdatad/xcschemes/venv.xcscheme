@@ -70,7 +70,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-cmd"
-            isEnabled = "YES">
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-remove new"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-create appstore"

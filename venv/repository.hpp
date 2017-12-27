@@ -14,6 +14,7 @@
 #include "venv.hpp"
 
 #include <map>
+#include <vector>
 #include <fstream>
 #include <string>
 #include <boost/archive/text_oarchive.hpp>
@@ -32,9 +33,60 @@ namespace v {
         map venvs;
         string current_venv;
     public:
+        bool exists(const string& name) const {
+            if(venvs.find(name) == venvs.end()){
+                return false;
+            }
+            return true;
+        }
+        void assert_available(const string& name) const {
+            if(!this->exists(name)){
+                std::cerr << "can't find venv [" << name << "]" << std::endl;
+                throw -1;
+            }
+        }
+        void assert_available(const std::vector<string>& names) const {
+            for(auto name:names){
+                this->assert_available(name);
+            }
+        }
         void create(const v::venv& venv){
+            if(this->exists(venv.name)){
+                std::cerr << "already exists" << std::endl;
+                throw -1;
+            }
             venvs[venv.name] = venv;
             current_venv = venv.name;
+        }
+        void rename(string old_name,string new_name){
+            this->assert_available(old_name);
+            if(this->exists(new_name)){
+                std::cerr << "already exists" << std::endl;
+                throw -1;
+            }
+            auto venv = this->venvs[old_name];
+            venv.name = new_name;
+            this->venvs.erase(old_name);
+            this->venvs[new_name] = venv;
+            if(current_venv == old_name){
+                current_venv = new_name;
+            }
+        }
+        void remove(string name){
+            if(this->exists(name)){
+                std::cerr << "removing [" << name << "]" << std::endl;
+                auto venv = venvs[name];
+                for(auto item:venv.items){
+                    venv.remove(item);
+                }
+                this->venvs.erase(name);
+                if(current_venv == name){
+                    current_venv = "";
+                }
+                return;
+            } else {
+                std::cerr << "can't find [" << name << "]" << std::endl;
+            }
         }
         repository(){
             std::ifstream ifs(v::root_folder+"/venv");
@@ -59,23 +111,6 @@ namespace v {
             this->assert_available(name);
             return venvs[name];
         }
-        bool exists(const string& name) const {
-            if(venvs.find(name) == venvs.end()){
-                return false;
-            }
-            return true;
-        }
-        void assert_available(const string& name) const {
-            if(!this->exists(name)){
-                std::cerr << "can't find venv [" << name << "]" << std::endl;
-                throw -1;
-            }
-        }
-        void assert_available(const std::vector<string>& names) const {
-            for(auto name:names){
-                this->assert_available(name);
-            }
-        }
         const map& all_venvs() const {
             return this->venvs;
         }
@@ -98,18 +133,31 @@ namespace v {
             return stream;
         }
         x::table out("list");
-        out("id")("name")("internal file")++;
+        out("")("label")("path")("internal path")++;
         for(auto venv:venvs){
             auto v = venv.second;
+            auto selected = "☐";
+            if(v.name == repo.current().name){
+                selected = "☒";
+            }
             for(auto i:v.items){
-                auto name = "☐ "+v.name;
-                if(v.name == repo.current().name){
-                    name = "☒ "+v.name;
-                }
-                out(name)(i.filename)(v.id)++;
+                out(selected)(v.name)(v.external_path(i))(v.internal_path(i))++;
             }
         }
         stream << out;
+        
+        std::vector<std::string> empty_venvs;
+        for(auto venv:venvs){
+            if(venv.second.items.empty()){
+                empty_venvs.push_back(venv.second.name);
+            }
+        }
+        if(!empty_venvs.empty()){
+            stream << std::endl << "empty venvs:" << std::endl;
+            for(auto name:empty_venvs){
+                stream << "\t[" << name << "]" << std::endl;
+            }
+        }
         return stream;
     }
 }

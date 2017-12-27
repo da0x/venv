@@ -26,12 +26,38 @@ namespace arg {
     std::string diff        = "-diff";
     std::string select      = "-select";
     std::string cmd         = "-cmd";
+    std::string rename      = "-rename";
+    std::string remove      = "-remove";
 }
 
 int main(int argc, const char * argv[]) try {
     using std::cout;
     using std::cerr;
     using std::endl;
+    
+    auto repo = v::repository();
+    
+    switch(argc){
+    case 1:
+    {
+        auto venvs = repo.all_venvs();
+        if(venvs.empty()){
+            std::cout << "venv is empty" << std::endl;
+        } else {
+            cout << repo << std::endl;
+        }
+        break;
+    }
+    case 2:
+        // implicit select..
+        auto name = argv[1];
+        if(repo.exists(name)){
+            repo.current().push();
+            repo.current(name).pull();
+            return 0;
+        }
+        break;
+    }
     
     auto arguments = x::options(argc,argv);
     arguments.map_to({
@@ -49,6 +75,8 @@ int main(int argc, const char * argv[]) try {
         {arg::diff,       x::option("shows diffs of a specific venv")},
         {arg::select,     x::option("switches the active venv. this command will push & pull current changes automatically")},
         {arg::cmd,        x::option("prints the executed command")},
+        {arg::rename,     x::option("renames a venv. use with -to option")},
+        {arg::remove,     x::option("removes a venv and all of its content")},
     });
     
     
@@ -72,8 +100,6 @@ int main(int argc, const char * argv[]) try {
         ::system(x::shell::mkdir(v::root_folder).c_str());
     }
     
-    auto repo = v::repository();
-    
     if(arguments[arg::create]){
         auto venv_names = arguments[arg::create].values();
         if(venv_names.empty()){
@@ -91,13 +117,13 @@ int main(int argc, const char * argv[]) try {
             }
         }
     }
-    
+
     if(arguments[arg::add]){
         if(!arguments[arg::to]){
             cerr << "missing " << arg::to << " <venv> in command line" << std::endl;
             return -1;
         }
-        
+
         auto file_names = arguments[arg::add].values();
         auto venv_names = arguments[arg::to].values();
         repo.assert_available(venv_names);
@@ -110,7 +136,7 @@ int main(int argc, const char * argv[]) try {
             }
         }
     }
-    
+
     if(arguments[arg::list]){
         auto venv_names = arguments[arg::add].values();
         if(venv_names.empty()){
@@ -123,7 +149,7 @@ int main(int argc, const char * argv[]) try {
             std::cout << venv << std::endl;
         }
     }
-    
+
     if(arguments[arg::pull]){
         auto venv_names = arguments[arg::pull].values();
         if(venv_names.empty()){
@@ -135,7 +161,7 @@ int main(int argc, const char * argv[]) try {
             repo[name].pull();
         }
     }
-    
+
     if(arguments[arg::push]){
         auto venv_names = arguments[arg::push].values();
         if(venv_names.empty()){
@@ -147,7 +173,7 @@ int main(int argc, const char * argv[]) try {
             repo[name].push();
         }
     }
-    
+
     if(arguments[arg::diff]){
         auto venv = repo.current();
         for(auto item:venv.items){
@@ -156,27 +182,40 @@ int main(int argc, const char * argv[]) try {
         
         return 0;
     }
-    
-    
+
+    if(arguments[arg::rename]){
+        auto names = arguments[arg::rename].values();
+        if(names.size()!= 2){
+            cerr << "usage: venv " << arg::rename << " <old name> <new name>" << std::endl;
+            return -1;
+        }
+        repo.rename(names[0],names[1]);
+        return 0;
+    }
+        
+    if(arguments[arg::remove]){
+        auto names = arguments[arg::remove].values();
+        if(names.empty()){
+            cerr << "usage: venv " << arg::remove << " <name> <name>" << std::endl;
+            return -1;
+        }
+        for(auto name: names){
+            repo.remove(name);
+        }
+        return 0;
+    }
+
     if(arguments[arg::select]){
         auto name = arguments[arg::select].value();
         if(name.empty()){
-            cerr << "usage: venv " << arg::select << " <venv name>" << std::endl;
+            cerr << "usage: $ venv " << arg::select << " <venv name>" << std::endl;
+            cerr << "usage: $ venv <venv name>" << std::endl;
             return -1;
         }
         repo.assert_available(name);
         repo.current().push();
         repo.current(name).pull();
         return 0;
-    }
-    
-    if(argc == 1){
-        auto venvs = repo.all_venvs();
-        if(venvs.empty()){
-            std::cout << "venv is empty" << std::endl;
-        } else {
-            cout << repo << std::endl;
-        }
     }
     
     return 0;

@@ -24,6 +24,7 @@ namespace x {
             << "rm "
             << "-f "
             << "-r "
+            << "-v "
             << "\"" << file << "\" ";
             return command.str();
         }

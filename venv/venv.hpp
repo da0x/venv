@@ -38,7 +38,9 @@ namespace v {
             }
         }
         void remove(item i){
-            items.erase(i);
+            std::string src = this->internal_path(i);
+            std::string command = x::shell::remove(src).c_str();
+            ::system(command.c_str());
         }
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version)
