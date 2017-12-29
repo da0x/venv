@@ -50,7 +50,7 @@ namespace v {
             ar & this->items;
         }
         std::string internal_path(const item& item){
-            return v::root_folder + "/" + this->id + "/" + item.id;
+            return v::root_folder + "/" + this->name + "/" + item.id;
         }
         std::string external_path(const item& item){
             return item.filename;
@@ -62,7 +62,7 @@ namespace v {
             ::system(command.c_str());
         }
         void pull(){
-            std::cout << "pulling [" << name << "]" << std::endl;
+            std::cout << "pulling [" << this->name << "]" << std::endl;
             for(auto item:this->items){
                 this->pull(item);
             }
@@ -74,7 +74,7 @@ namespace v {
             ::system(command.c_str());
         }
         void push(){
-            std::cout << "pushing [" << name << "]" << std::endl;
+            std::cout << "pushing [" << this->name << "]" << std::endl;
             for(auto item:this->items){
                 push(item);
             }
