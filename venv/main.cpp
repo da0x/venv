@@ -111,7 +111,7 @@ int main(int argc, const char * argv[]) try {
             if(!repo.exists(venv.name)){
                 repo.create(venv);
                 cout << "creating venv [" << venv.name << "]" << endl;
-                ::system(x::shell::mkdir(v::root_folder + "/" + venv.id).c_str());
+                ::system(x::shell::mkdir(v::root_folder + "/" + venv.name).c_str());
             } else {
                 cerr << "[" << venv.name << "]" << " venv already exists." << std::endl;
             }

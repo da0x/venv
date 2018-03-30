@@ -70,7 +70,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-cmd"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-remove new"
