@@ -74,6 +74,10 @@ namespace v {
         }
         void remove(string name){
             if(this->exists(name)){
+                if(name == this->current().name){
+                    std::cerr << "can't remove the active venv, select a another first." << std::endl;
+                    throw -1;
+                }
                 std::cerr << "removing [" << name << "]" << std::endl;
                 auto venv = venvs[name];
                 for(auto item:venv.items){

@@ -75,7 +75,7 @@ int main(int argc, const char * argv[]) try {
         {arg::diff,       x::option("shows diffs of a specific venv")},
         {arg::select,     x::option("switches the active venv. this command will push & pull current changes automatically")},
         {arg::cmd,        x::option("prints the executed command")},
-        {arg::rename,     x::option("renames a venv. use with -to option")},
+        {arg::rename,     x::option("renames a venv")},
         {arg::remove,     x::option("removes a venv and all of its content")},
     });
     
@@ -190,6 +190,10 @@ int main(int argc, const char * argv[]) try {
             return -1;
         }
         repo.rename(names[0],names[1]);
+        
+        auto from = v::root_folder + "/" + names[0];
+        auto to = v::root_folder + "/" + names[1];
+        ::system(x::shell::move(from,to).c_str());
         return 0;
     }
         
@@ -201,6 +205,7 @@ int main(int argc, const char * argv[]) try {
         }
         for(auto name: names){
             repo.remove(name);
+            ::system(x::shell::remove(v::root_folder + "/" + name).c_str());
         }
         return 0;
     }
