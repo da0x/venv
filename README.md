@@ -26,32 +26,35 @@ $ venv -select conf1
 to add a file:
 ```
 $ echo conf > test
-$ ./venv -add test -to conf1
-test -> .venv/a8d5c723-655e-4eb6-98be-453fe8c85a7f/a747bed0-298b-4ffe-8bfd-158ab7bd8cda
-$ ./venv -add test -to conf2
-test -> .venv/a295705e-2874-45c2-a66a-7f7de274e6d7/056397d7-221e-4b27-8cda-a7798122ea26
+$ venv -add test -to conf1
+test -> .venv/conf1/1c44ff32-b377-4f62-9c2a-81734ee35fc4
+$ venv -add test -to conf2
+test -> .venv/conf2/b59fb797-12e9-4087-a38c-44e0a002ff59
 ```
 the file is automatically copied into the venv.
 
 let's try modifying it:
 ```
 $ echo changes for conf1 > test
+```
 
+now we can start switching between them. you can use the explicit option -select or simply type the name of your venv
 
-$ ./venv -select conf2
-pushing...
-test -> .venv/a8d5c723-655e-4eb6-98be-453fe8c85a7f/a747bed0-298b-4ffe-8bfd-158ab7bd8cda
-pulling...
-.venv/a295705e-2874-45c2-a66a-7f7de274e6d7/056397d7-221e-4b27-8cda-a7798122ea26 -> test
+```
+$ venv conf2
+pushing [conf1]
+test -> .venv/conf1/1c44ff32-b377-4f62-9c2a-81734ee35fc4
+pulling [conf2]
+.venv/conf2/b59fb797-12e9-4087-a38c-44e0a002ff59 -> test
 $ cat test
 conf
 
 
-$ ./venv -select conf1
-pushing...
-test -> .venv/a295705e-2874-45c2-a66a-7f7de274e6d7/056397d7-221e-4b27-8cda-a7798122ea26
-pulling...
-.venv/a8d5c723-655e-4eb6-98be-453fe8c85a7f/a747bed0-298b-4ffe-8bfd-158ab7bd8cda -> test
+$ venv conf1
+pushing [conf2]
+test -> .venv/conf2/b59fb797-12e9-4087-a38c-44e0a002ff59
+pulling [conf1]
+.venv/conf1/1c44ff32-b377-4f62-9c2a-81734ee35fc4 -> test
 
 
 $ cat test
@@ -60,29 +63,43 @@ changes for conf1
 ```
 to see status of current working copy:
 ```
-$ ./venv
+$ venv
 
-   venv list:                                               
-   ------------------------------------   -----   -----   --------  
-   id                                     files   name    selected  
-                                                                    
-   a8d5c723-655e-4eb6-98be-453fe8c85a7f   1       conf1   *         
-   a295705e-2874-45c2-a66a-7f7de274e6d7   1       conf2             
-   ------------------------------------   -----   -----   --------  
+   list                                                                 
+   -   -----   ----   ------------------------------------------------  
+       label   path   internal path                                     
+                                                                        
+   ☒   conf1   test   .venv/conf1/1c44ff32-b377-4f62-9c2a-81734ee35fc4  
+   ☐   conf2   test   .venv/conf2/b59fb797-12e9-4087-a38c-44e0a002ff59  
+   -   -----   ----   ------------------------------------------------  
 
-Files test and .venv/a8d5c723-655e-4eb6-98be-453fe8c85a7f/a747bed0-298b-4ffe-8bfd-158ab7bd8cda differ
+
 ```
-to push your changes:
+to push your changes without switching the current venv:
 ```
 $ venv -push
 ```
-or alternatively to pull a fresh copy:
+or alternatively to pull a fresh copy to reset your copy:
 ```
 $ venv -pull
 ```
-finally, to remove everything venv related and keep the current working copy:
+finally, finally you can remove a specific venv with -remove, you can rename a venv with -rename, or you can remove everything venv related with -deinit
 ```
+$ venv -rename conf2 conf_2
+.venv/conf2 -> .venv/conf_2
+
+$ venv -remove conf_2
+removing [conf_2]
+.venv/conf_2/b59fb797-12e9-4087-a38c-44e0a002ff59
+.venv/conf_2
+
 $ venv -deinit
+removing all venvs
+.venv/venv
+.venv/conf1/1c44ff32-b377-4f62-9c2a-81734ee35fc4
+.venv/conf1
+.venv
+
 ```
 
 that's all
