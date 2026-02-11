@@ -25,7 +25,7 @@ namespace arg {
     std::string pull        = "--pull";
     std::string diff        = "--diff";
     std::string select      = "--select";
-    std::string cmd         = "--cmd";
+    std::string verbose     = "--verbose";
     std::string rename      = "--rename";
     std::string remove      = "--remove";
 }
@@ -74,13 +74,13 @@ int main(int argc, const char * argv[]) try {
         {arg::push,       x::option("pushes current changes to a venv")},
         {arg::diff,       x::option("shows diffs of a specific venv")},
         {arg::select,     x::option("switches the active venv. this command will push & pull current changes automatically")},
-        {arg::cmd,        x::option("prints the executed command")},
+        {arg::verbose,        x::option("prints the executed command")},
         {arg::rename,     x::option("renames a venv")},
         {arg::remove,     x::option("removes a venv and all of its content")},
     });
     
     
-    if(arguments[arg::cmd]){
+    if(arguments[arg::verbose]){
         std::cout << argv[0] << std::endl;
     }
 
