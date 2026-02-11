@@ -13,21 +13,21 @@
 #include "repository.hpp"
 
 namespace arg {
-    std::string help        = "-help";
-    std::string init        = "-init";
-    std::string deinit      = "-deinit";
-    std::string list        = "-ls";
-    std::string create      = "-create";
-    std::string add         = "-add";
-    std::string to          = "-to";
-    std::string from        = "-from";
-    std::string push        = "-push";
-    std::string pull        = "-pull";
-    std::string diff        = "-diff";
-    std::string select      = "-select";
-    std::string cmd         = "-cmd";
-    std::string rename      = "-rename";
-    std::string remove      = "-remove";
+    std::string help        = "--help";
+    std::string init        = "--init";
+    std::string deinit      = "--deinit";
+    std::string list        = "--ls";
+    std::string create      = "--create";
+    std::string add         = "--add";
+    std::string to          = "--to";
+    std::string from        = "--from";
+    std::string push        = "--push";
+    std::string pull        = "--pull";
+    std::string diff        = "--diff";
+    std::string select      = "--select";
+    std::string cmd         = "--cmd";
+    std::string rename      = "--rename";
+    std::string remove      = "--remove";
 }
 
 int main(int argc, const char * argv[]) try {
