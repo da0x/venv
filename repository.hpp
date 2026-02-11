@@ -17,10 +17,6 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/set.hpp>
 
 namespace v {
     namespace {
@@ -95,17 +91,48 @@ namespace v {
         repository(){
             std::ifstream ifs(v::root_folder+"/venv");
             if(ifs.is_open()){
-                boost::archive::text_iarchive ia(ifs);
-                ia & venvs;
-                ia & current_venv;
+                string line;
+                // current venv name
+                if(std::getline(ifs, current_venv)){
+                    // number of venvs
+                    size_t num_venvs = 0;
+                    if(std::getline(ifs, line)){
+                        num_venvs = std::stoul(line);
+                    }
+                    for(size_t vi = 0; vi < num_venvs; vi++){
+                        v::venv env;
+                        std::getline(ifs, env.name);
+                        std::getline(ifs, env.id);
+                        size_t num_items = 0;
+                        if(std::getline(ifs, line)){
+                            num_items = std::stoul(line);
+                        }
+                        for(size_t ii = 0; ii < num_items; ii++){
+                            v::item item;
+                            std::getline(ifs, item.filename);
+                            std::getline(ifs, item.id);
+                            env.items.insert(item);
+                        }
+                        venvs[env.name] = env;
+                    }
+                }
             }
         }
         ~repository(){
             std::ofstream ofs(v::root_folder+"/venv");
             if(ofs.is_open()){
-                boost::archive::text_oarchive oa(ofs);
-                oa & venvs;
-                oa & current_venv;
+                ofs << current_venv << "\n";
+                ofs << venvs.size() << "\n";
+                for(auto& pair : venvs){
+                    auto& env = pair.second;
+                    ofs << env.name << "\n";
+                    ofs << env.id << "\n";
+                    ofs << env.items.size() << "\n";
+                    for(auto& item : env.items){
+                        ofs << item.filename << "\n";
+                        ofs << item.id << "\n";
+                    }
+                }
             }
         }
         void select(const std::string& name){

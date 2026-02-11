@@ -18,13 +18,7 @@ namespace v {
         std::string filename;
         std::string id;
         item(){}
-        item(std::string filename): filename(filename), id(x::uuid::string()) {}
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version)
-        {
-            ar & this->filename;
-            ar & this->id;
-        }
+        item(std::string filename): filename(filename), id(uuid::v4::generate()) {}
         bool operator < (const item& rvalue) const {
             return this->filename < rvalue.filename;
         }

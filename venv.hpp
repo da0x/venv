@@ -28,7 +28,7 @@ namespace v {
         std::set<item> items;
         std::string id;
         venv(){}
-        venv(std::string name):name(name), id(x::uuid::string()) {}
+        venv(std::string name):name(name), id(uuid::v4::generate()) {}
         void add(item i){
             if(items.find(i)==items.end()){
                 items.insert(i);
@@ -41,13 +41,6 @@ namespace v {
             std::string src = this->internal_path(i);
             std::string command = x::shell::remove(src).c_str();
             ::system(command.c_str());
-        }
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version)
-        {
-            ar & this->name;
-            ar & this->id;
-            ar & this->items;
         }
         std::string internal_path(const item& item){
             return v::root_folder + "/" + this->name + "/" + item.id;
