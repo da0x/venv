@@ -69,7 +69,7 @@ int main(int argc, const char * argv[]) try {
         {arg::add,        x::option("adds a file to a venv")},
         {arg::push,       x::option("push all changes to the active venv")},
         {arg::to,         x::option("specifies a destination")},
-        {arg::from,       x::option("used with -pull switch to provide a source venv")},
+        {arg::from,       x::option("used with --pull switch to provide a source venv")},
         {arg::pull,       x::option("pulls new copies and replaces working copy")},
         {arg::push,       x::option("pushes current changes to a venv")},
         {arg::diff,       x::option("shows diffs of a specific venv")},
